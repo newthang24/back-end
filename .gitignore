@@ -127,6 +127,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+# nari virtual environments
+nari/
 
 # Spyder project settings
 .spyderproject
