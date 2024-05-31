@@ -3,10 +3,8 @@ from django.db import models
 # Create your models here.
 
 class User(models.Model):
-    serial_id = models.CharField(max_length=255, unique=True)
-    password = models.CharField(max_length=128)
     username = models.CharField(max_length=150, unique=True)
-    refreshtoken = models.CharField(max_length=255, blank=True, null=True)
+    password = models.CharField(max_length=128)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
 
