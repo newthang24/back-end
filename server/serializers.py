@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import WalkHistory, Calendar, User
+from .models import WalkHistory, Calendar, User, SRI
 
 
 class CalendarSerializer(serializers.ModelSerializer):
@@ -43,3 +43,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'nickname', 'password']
 
+class SRISerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SRI
+        fields = ['id', 'user', 'sri_score', 'sri_date']
+        read_only_fields = ['user', 'sri_date']
+
+class EmotionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Calendar
+        fields = ['question', 'sentence', 'emotion_large', 'emotion_small']

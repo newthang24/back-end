@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
-from .serializers import WalkHistorySerializer, WalkHistoryEndSerializer, WalkReportSerializer, CalendarSerializer, UserSerializer
-from .models import WalkHistory, Calendar, User
+from .serializers import WalkHistorySerializer, WalkHistoryEndSerializer, WalkReportSerializer, CalendarSerializer, UserSerializer, SRISerializer, EmotionSerializer
+from .models import WalkHistory, Calendar, User, SRI
 from django.utils import timezone
 
 
@@ -166,3 +166,36 @@ def user_delete(request):
             user.delete()
             return Response({"message": "Account deleted successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+# SRI 점수 POST, GET
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def sri_list_create(request):
+    if request.method == 'GET':
+        sri_scores = SRI.objects.filter(user=request.user)
+        serializer = SRISerializer(sri_scores, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = SRISerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user, sri_date=timezone.now())
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+# 감정 기록 POST, GET
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def emotion_list_create(request):
+    if request.method == 'GET':
+        user = request.user
+        emotions = Calendar.objects.filter(user=user)
+        serializer = EmotionSerializer(emotions, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = EmotionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -72,6 +72,7 @@ class Calendar(models.Model):
     month = models.IntegerField()
     day = models.IntegerField()
     walkfinished = models.BooleanField(default=False)
+    # 감정 관련 model
     question = models.CharField(max_length=255, blank=True, null=True)
     sentence = models.CharField(max_length=255, blank=True, null=True)
     emotion_large = models.CharField(max_length=255, blank=True, null=True)
