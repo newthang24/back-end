@@ -67,7 +67,7 @@ class SRI(models.Model):
         return f"SRI Score: {self.sri_score} for {self.user.username}"
 
 class Calendar(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
     year = models.IntegerField()
     month = models.IntegerField()
     day = models.IntegerField()
@@ -82,13 +82,13 @@ class Calendar(models.Model):
 
 class WalkHistory(models.Model):
     calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    stable_score = models.FloatField()
-    stable_loc = models.CharField(max_length=255)
-    walk_score = models.FloatField()
-    distance = models.IntegerField()
-    course = models.CharField(max_length=255)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    stable_score = models.FloatField(null=True, blank=True)
+    stable_loc = models.CharField(max_length=255,null=True, blank=True)
+    walk_score = models.FloatField(null=True, blank=True)
+    distance = models.IntegerField(null=True, blank=True)
+    course = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"Walk History: {self.start_time} to {self.end_time}"
