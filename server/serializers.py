@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import WalkHistory, Calendar
+from .models import WalkHistory, Calendar, User
+
 
 class CalendarSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,3 +29,17 @@ class WalkReportSerializer(serializers.ModelSerializer):
         if obj.end_time and obj.start_time:
             return obj.end_time - obj.start_time
         return None
+
+
+class UserSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username = validated_data['username'],
+            nickname = validated_data['nickname'],
+            password = validated_data['password']
+        )
+        return user
+    class Meta:
+        model = User
+        fields = ['username', 'nickname', 'password']
+
