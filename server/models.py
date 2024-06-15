@@ -69,11 +69,17 @@ class SRI(models.Model):
         return f"SRI Score: {self.sri_score} for {self.user.username}"
 
 class Calendar(models.Model):
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # user 부분 주석 풀 때 null=True 임시로 해 주고 데이터 채운 뒤 변경해야 함
+
     year = models.IntegerField()
     month = models.IntegerField()
     day = models.IntegerField()
     walkfinished = models.BooleanField(default=False)
+    # 감정 관련 model
     question = models.CharField(max_length=255, blank=True, null=True)
     sentence = models.CharField(max_length=255, blank=True, null=True)
     emotion_large = models.CharField(max_length=255, blank=True, null=True)
