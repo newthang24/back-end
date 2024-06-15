@@ -75,14 +75,29 @@ def get_monthly_calendar(request, year, month):
 @api_view(['GET'])
 def get_calendar(request):
     today = timezone.now()
-    calendars = Calendar.objects.filter(year=today.year, month=today.month, day=today.day)
-    if not calendars.exists():
-        return Response({"detail": "Calendar not found for today's date."}, status=status.HTTP_404_NOT_FOUND)
+    #
+    # calendars = Calendar.objects.filter(year=today.year, month=today.month, day=today.day)
+    # if not calendars.exists():
+    #     return Response({"detail": "Calendar not found for today's date."}, status=status.HTTP_404_NOT_FOUND)
+    #
+    # calendar = calendars.first()
+    # serializer = CalendarSerializer(calendar)
+    # #return Response({"calendar_id": calendar.id}, status=status.HTTP_200_OK)
+    # #return Response(serializer.data, status=status.HTTP_200_OK)
+    # date_based_id = f"{today.year % 100:02d}{today.month:02d}{today.day:02d}"
+    # response_data = {
+    #     "calendar_id": date_based_id,
+    #     **serializer.data
+    # }
+    # return Response(response_data, status=status.HTTP_200_OK)
+    # 주어진 날짜에 해당하는 Calendar 객체를 찾거나 새로 생성합니다.
+    calendar, created = Calendar.objects.get_or_create(
+        year=today.year,
+        month=today.month,
+        day=today.day
+    )
 
-    calendar = calendars.first()
     serializer = CalendarSerializer(calendar)
-    #return Response({"calendar_id": calendar.id}, status=status.HTTP_200_OK)
-    #return Response(serializer.data, status=status.HTTP_200_OK)
     date_based_id = f"{today.year % 100:02d}{today.month:02d}{today.day:02d}"
     response_data = {
         "calendar_id": date_based_id,
