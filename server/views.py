@@ -1,3 +1,6 @@
+from datetime import datetime
+
+from django.db.models import Avg, Sum
 from django.shortcuts import render
 from django.middleware.csrf import get_token
 from rest_framework import status
@@ -10,6 +13,51 @@ from .serializers import WalkHistorySerializer, WalkHistoryEndSerializer, WalkRe
 from .models import WalkHistory, Calendar, User, SRI
 from django.utils import timezone
 
+#월별 산책 기록 평균 가져오기
+@api_view(['GET'])
+def get_monthly_stats(request, year, month):
+    # 연도와 월에 해당하는 WalkHistory 객체들을 필터링
+    start_date = datetime(year, month, 1)
+    end_date = datetime(year, month + 1, 1) if month != 12 else datetime(year + 1, 1, 1)
+    walks = WalkHistory.objects.filter(start_time__range=(start_date, end_date))
+
+    # 스트레스 지수 평균
+    stress_avg = walks.aggregate(Avg('stable_score'))['stable_score__avg'] or 0
+
+    # 누적 산책 거리와 시간
+    total_distance = walks.aggregate(Sum('distance'))['distance__sum'] or 0
+    total_time = walks.aggregate(Sum('end_time') - Sum('start_time'))['end_time__sum'] - walks.aggregate(Sum('start_time'))['start_time__sum']
+
+    # 산책 안정도 평균
+    stable_score_avg = walks.aggregate(Avg('stable_score'))['stable_score__avg'] or 0
+
+    data = {
+        'stress_avg': stress_avg,
+        'total_distance': total_distance,
+        'total_time': total_time,
+        'stable_score_avg': stable_score_avg,
+    }
+    return Response(data)
+
+#월별 캘린더 데이터 가져오기
+@api_view(['GET'])
+def get_monthly_calendar(request, year, month):
+    # 연도와 월에 해당하는 Calendar 객체들을 필터링
+    calendars = Calendar.objects.filter(year=year, month=month)
+
+    # 각 Calendar 객체의 감정을 포함한 데이터 준비
+    calendar_data = []
+    for calendar in calendars:
+        walk_histories = WalkHistory.objects.filter(calendar=calendar)
+        walk_data = {
+            'date': calendar.day,
+            'emotion_large': calendar.emotion_large,
+            'emotion_small': calendar.emotion_small,
+            'walk_histories': list(walk_histories.values())  # WalkHistory 객체들의 리스트를 포함
+        }
+        calendar_data.append(walk_data)
+
+    return Response(calendar_data)
 
 # @api_view(['POST'])
 # def create_calendar(request):
@@ -33,7 +81,15 @@ def get_calendar(request):
 
     calendar = calendars.first()
     serializer = CalendarSerializer(calendar)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    #return Response({"calendar_id": calendar.id}, status=status.HTTP_200_OK)
+    #return Response(serializer.data, status=status.HTTP_200_OK)
+    date_based_id = f"{today.year % 100:02d}{today.month:02d}{today.day:02d}"
+    response_data = {
+        "calendar_id": date_based_id,
+        **serializer.data
+    }
+    return Response(response_data, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 def start_walk(request):
     data = request.data.copy()

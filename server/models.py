@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
 
 class UserManager(BaseUserManager):
     # 일반 user 생성
@@ -28,7 +29,8 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-class User(AbstractBaseUser):
+#PermissionsMixin 추가
+class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=10, null=False, blank=False, unique=True)
     nickname = models.CharField(max_length=10, blank=True)
@@ -67,8 +69,12 @@ class SRI(models.Model):
         return f"SRI Score: {self.sri_score} for {self.user.username}"
 
 class Calendar(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
     #user = models.ForeignKey(User, on_delete=models.CASCADE)
     # user 부분 주석 풀 때 null=True 임시로 해 주고 데이터 채운 뒤 변경해야 함
+
     year = models.IntegerField()
     month = models.IntegerField()
     day = models.IntegerField()
