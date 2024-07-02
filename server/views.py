@@ -39,6 +39,7 @@ def get_monthly_stats(request, year, month):
     }
     return Response(data)
 
+
 #월별 캘린더 데이터 가져오기
 @api_view(['GET'])
 def get_monthly_calendar(request, year, month):
@@ -124,7 +125,7 @@ def start_walk(request):
     except Calendar.DoesNotExist:
         return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    # data['calendar'] = calendar.id
+    data['calendar'] = calendar.id
     data['start_time'] = timezone.now()
     serializer = WalkHistorySerializer(data=data)
     if serializer.is_valid():
@@ -133,7 +134,8 @@ def start_walk(request):
         walk_history = serializer.save()  # 저장된 객체를 가져옴
         response_data = serializer.data
         response_data['id'] = walk_history.id  # 응답에 id 추가
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        #return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response({"message": "Start walk successfully"}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -148,9 +150,16 @@ def end_walk(request, pk):
 
     serializer = WalkHistoryEndSerializer(walk, data=data, partial=True)
     if serializer.is_valid():
+
         serializer.save()
-        return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(pk=request.user.id)
+            user.add_points(10)
+            #return Response(serializer.data)
+            return Response({"message": "End walk successfully"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def walk_report(request, pk):
@@ -161,10 +170,16 @@ def walk_report(request, pk):
 
     # serializer = WalkReportSerializer(walk)
     # return Response(serializer.data)
+    user = User.objects.get(pk=request.user.id)
+    #calendar = walk.calendar
+
+
     summary_data = {
         'total_time': (walk.end_time - walk.start_time) if walk.end_time and walk.start_time else None,
         'distance': walk.distance,
         'stable_score': walk.stable_score,
+        'points': user.points if user else None,
+        'level': user.level if user else None,
     }
     return Response(summary_data, status=status.HTTP_200_OK)
 

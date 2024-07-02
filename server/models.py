@@ -31,7 +31,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=10, unique=True)
     nickname = models.CharField(max_length=10, blank=True)
-    
+
+    level = models.IntegerField(default=1)
+    points = models.IntegerField(default=0)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -49,6 +52,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def has_module_perms(self, app_label):
         return self.is_superuser
+
+    def add_points(self, points):
+        self.points += points
+        self.check_level_up()
+        self.save()
+
+    def check_level_up(self):
+        level_thresholds = {
+            1: 100,
+            2: 200,
+            3: 300,
+            4: 400,
+            5: 500,
+            # Add more levels and their thresholds as needed
+        }
+        while self.level in level_thresholds and self.points >= level_thresholds[self.level]:
+            self.level += 1
 
 class SRI(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
