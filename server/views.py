@@ -32,12 +32,13 @@ def get_monthly_stats(request, year, month):
     stable_score_avg = walks.aggregate(Avg('stable_score'))['stable_score__avg'] or 0
 
     data = {
+        'message':'successfully',
         'stress_avg': stress_avg,
         'total_distance': total_distance,
         'total_time': total_time,
         'stable_score_avg': stable_score_avg,
     }
-    return Response(data)
+    return Response(data,  status=status.HTTP_200_OK)
 
 
 #월별 캘린더 데이터 가져오기
@@ -51,6 +52,7 @@ def get_monthly_calendar(request, year, month):
     for calendar in calendars:
         walk_histories = WalkHistory.objects.filter(calendar=calendar)
         walk_data = {
+            'message':'successfully',
             'date': calendar.day,
             'emotion_large': calendar.emotion_large,
             'emotion_small': calendar.emotion_small,
@@ -58,7 +60,7 @@ def get_monthly_calendar(request, year, month):
         }
         calendar_data.append(walk_data)
 
-    return Response(calendar_data)
+    return Response(calendar_data, status=status.HTTP_200_OK)
 
 # @api_view(['POST'])
 # def create_calendar(request):
@@ -102,6 +104,7 @@ def get_calendar(request):
     serializer = CalendarSerializer(calendar)
     date_based_id = f"{today.year % 100:02d}{today.month:02d}{today.day:02d}"
     response_data = {
+        'message': 'successfully',
         "calendar_id": date_based_id,
         **serializer.data
     }
@@ -136,7 +139,7 @@ def start_walk(request):
         response_data = serializer.data
         response_data['id'] = walk_history.id  # 응답에 id 추가
         #return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response({"message": "Start walk successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": "successfully"}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
@@ -157,7 +160,7 @@ def end_walk(request, pk):
             user = User.objects.get(pk=request.user.id)
             user.add_points(10)
             #return Response(serializer.data)
-            return Response({"message": "End walk successfully"}, status=status.HTTP_200_OK)
+            return Response({"message": "successfully"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -176,13 +179,14 @@ def walk_report(request, pk):
 
 
     summary_data = {
+        'message':'successfully',
         'total_time': (walk.end_time - walk.start_time) if walk.end_time and walk.start_time else None,
         'distance': walk.distance,
         'stable_score': walk.stable_score,
         'points': user.points if user else None,
         'level': user.level if user else None,
     }
-    return Response(summary_data, status=status.HTTP_200_OK)
+    return Response(summary_data,  status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def walk_history(request, pk):
@@ -192,7 +196,12 @@ def walk_history(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     serializer = WalkReportSerializer(walk)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    response_data = {
+        'message': 'successfully',
+        'data': serializer.data
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 def update_walk_score(request, pk):
@@ -205,7 +214,7 @@ def update_walk_score(request, pk):
     if walk_score is not None:
         walk.walk_score = walk_score
         walk.save()
-        return Response({"detail": "Walk score updated successfully."}, status=status.HTTP_200_OK)
+        return Response({"detail": "successfully."}, status=status.HTTP_200_OK)
     return Response({"detail": "Walk score is required."}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -217,7 +226,7 @@ def user_create(request):
         if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
+            return Response({'token': token.key, "message": "successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # 로그인
@@ -231,7 +240,7 @@ def user_login(request):
             login(request, user)
             token, created = Token.objects.get_or_create(user=user)
             csrf_token = get_token(request)
-            return Response({"token": token.key, "csrf_token": csrf_token, "message": "Logged in successfully"}, status=status.HTTP_200_OK)
+            return Response({"token": token.key, "csrf_token": csrf_token, "message": "successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 # 로그아웃
@@ -240,7 +249,7 @@ def user_logout(request):
     if request.method == 'POST':
         request.user.auth_token.delete()
         logout(request)
-        return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+        return Response({"message": "successfully"}, status=status.HTTP_200_OK)
 
 # 회원 탈퇴
 @api_view(['DELETE'])
@@ -251,7 +260,7 @@ def user_delete(request):
             # 로그아웃 후 계정 삭제
             logout(request)
             user.delete()
-            return Response({"message": "Account deleted successfully"}, status=status.HTTP_200_OK)
+            return Response({"message": "successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
 
 # SRI 점수 POST, GET
@@ -261,13 +270,13 @@ def sri_list_create(request):
     if request.method == 'GET':
         sri_scores = SRI.objects.filter(user=request.user)
         serializer = SRISerializer(sri_scores, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, {"message": "successfully"})
 
     elif request.method == 'POST':
         serializer = SRISerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user, sri_date=timezone.now())
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, {"message": "successfully"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -348,5 +357,13 @@ def emotion_list_create(request):
     if request.method == 'GET':
         emotions = Calendar.objects.filter(user=user)
         serializer = EmotionSerializer(emotions, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, {"message": "successfully"})
+
+
+    elif request.method == 'POST':
+        serializer = EmotionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, {"message": "successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
