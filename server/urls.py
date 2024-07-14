@@ -15,6 +15,7 @@ urlpatterns = [
     path('login/', views.user_login, name='user_login'),
     path('logout/', views.user_logout, name='user_logout'),
     path('delete/', views.user_delete, name='user_delete'),
+    
     path('stats/<int:year>/<int:month>/', views.get_monthly_stats, name='get-monthly-stats'),
     path('calendar/<int:year>/<int:month>/', views.get_monthly_calendar, name='get-monthly-calendar'),
 

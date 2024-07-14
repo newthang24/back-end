@@ -98,7 +98,9 @@ def get_calendar(request):
         year=today.year,
         month=today.month,
         day=today.day,
-        user_id = request.user.id,
+
+        user_id=request.user.id,
+
     )
 
     serializer = CalendarSerializer(calendar)
@@ -278,7 +280,8 @@ def sri_list_create(request):
             serializer.save(user=request.user, sri_date=timezone.now())
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 # 감정 기록 POST, GET
 # @api_view(['GET', 'POST'])
 # @permission_classes([IsAuthenticated])
@@ -288,7 +291,7 @@ def sri_list_create(request):
 #         emotions = Calendar.objects.filter(user=user)
 #         serializer = EmotionSerializer(emotions, many=True)
 #         return Response(serializer.data)
-#
+
 #     elif request.method == 'POST':
 #         serializer = EmotionSerializer(data=request.data)
 #         if serializer.is_valid():
@@ -326,6 +329,7 @@ def analyze_emotion(request):
 
     return Response({"calendar_id": calendar.id, "emotion_large": emotion_large}, status=status.HTTP_200_OK)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_emotion(request):
@@ -343,14 +347,17 @@ def save_emotion(request):
     calendar.emotion_small = emotion_small
     calendar.save()
 
+
     return Response({"id": calendar.id, "question": calendar.question, "sentence": calendar.sentence,
                      "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small},
                     status=status.HTTP_201_CREATED)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def emotion_list_create(request):
     user = request.user
+
     if request.method == 'GET':
         emotions = Calendar.objects.filter(user=user)
         serializer = EmotionSerializer(emotions, many=True)
