@@ -98,7 +98,9 @@ def get_calendar(request):
         year=today.year,
         month=today.month,
         day=today.day,
+
         user_id=request.user.id,
+
     )
 
     serializer = CalendarSerializer(calendar)
@@ -201,7 +203,7 @@ def walk_history(request, pk):
         'data': serializer.data
     }
 
-    return Response(response_data, status=status.HTTP_200_OK)
+    return Response(serializer.data,   status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 def update_walk_score(request, pk):
@@ -270,13 +272,13 @@ def sri_list_create(request):
     if request.method == 'GET':
         sri_scores = SRI.objects.filter(user=request.user)
         serializer = SRISerializer(sri_scores, many=True)
-        return Response(serializer.data, {"message": "successfully"})
+        return Response(serializer.data)
 
     elif request.method == 'POST':
         serializer = SRISerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user, sri_date=timezone.now())
-            return Response(serializer.data, {"message": "successfully"}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -345,8 +347,10 @@ def save_emotion(request):
     calendar.emotion_small = emotion_small
     calendar.save()
 
-    return Response({"id": calendar.id, "question": calendar.question, "sentence": calendar.sentence, "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small}, status=status.HTTP_201_CREATED)
 
+    return Response({"id": calendar.id, "question": calendar.question, "sentence": calendar.sentence,
+                     "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small},
+                    status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET'])
@@ -357,13 +361,4 @@ def emotion_list_create(request):
     if request.method == 'GET':
         emotions = Calendar.objects.filter(user=user)
         serializer = EmotionSerializer(emotions, many=True)
-        return Response(serializer.data, {"message": "successfully"})
-
-
-    elif request.method == 'POST':
-        serializer = EmotionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, {"message": "successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        return Response(serializer.data)
