@@ -23,4 +23,8 @@ urlpatterns = [
     
     # 감정 기록 결과 저장 및 불러오기
     path('emotions/', views.emotion_list_create, name='emotion-list-create'),
+    # 새로운 감정 분석
+    path('analyze-emotion/', views.analyze_emotion, name='analyze-emotion'),
+    # 새로운 감정 기록 저장
+    path('save-emotion/', views.save_emotion, name='save-emotion'),
 ]

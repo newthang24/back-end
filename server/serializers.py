@@ -52,4 +52,5 @@ class SRISerializer(serializers.ModelSerializer):
 class EmotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Calendar
-        fields = ['question', 'sentence', 'emotion_large', 'emotion_small']
+        #fields = ['question', 'sentence', 'emotion_large', 'emotion_small']
+        fields = ['id', 'question', 'sentence', 'emotion_large', 'emotion_small']

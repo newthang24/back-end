@@ -97,7 +97,8 @@ def get_calendar(request):
     calendar, created = Calendar.objects.get_or_create(
         year=today.year,
         month=today.month,
-        day=today.day
+        day=today.day,
+        user_id = request.user.id,
     )
 
     serializer = CalendarSerializer(calendar)
@@ -200,7 +201,7 @@ def walk_history(request, pk):
         'data': serializer.data
     }
 
-    return Response(response_data, status=status.HTTP_200_OK)
+    return Response(serializer.data,   status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 def update_walk_score(request, pk):
@@ -269,28 +270,88 @@ def sri_list_create(request):
     if request.method == 'GET':
         sri_scores = SRI.objects.filter(user=request.user)
         serializer = SRISerializer(sri_scores, many=True)
-        return Response(serializer.data, {"message": "successfully"})
+        return Response(serializer.data)
 
     elif request.method == 'POST':
         serializer = SRISerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=request.user, sri_date=timezone.now())
-            return Response(serializer.data, {"message": "successfully"}, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 # 감정 기록 POST, GET
-@api_view(['GET', 'POST'])
+# @api_view(['GET', 'POST'])
+# @permission_classes([IsAuthenticated])
+# def emotion_list_create(request):
+#     if request.method == 'GET':
+#         user = request.user
+#         emotions = Calendar.objects.filter(user=user)
+#         serializer = EmotionSerializer(emotions, many=True)
+#         return Response(serializer.data)
+#
+#     elif request.method == 'POST':
+#         serializer = EmotionSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(user=request.user)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def analyze_emotion(request):
+    sentence = request.data.get('sentence')
+    question = request.data.get('question')
+    if not sentence:
+        return Response({"detail": "Sentence is required."}, status=status.HTTP_400_BAD_REQUEST)
+    if not question:
+        return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Colab 모델을 사용하여 감정 분석 수행 (예시)
+    # emotion_large = call_colab_model(sentence)
+    emotion_large = "Happy"  # 여기에 Colab 모델을 호출하는 로직 추가
+
+    # 오늘 날짜의 Calendar ID 조회
+    user = request.user
+    today = timezone.now().date()
+    try:
+        calendar = Calendar.objects.get(user=user, year=today.year, month=today.month, day=today.day)
+    except Calendar.DoesNotExist:
+        return Response({"detail": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
+
+    # 감정 결과와 질문 저장
+    calendar.question = question
+    calendar.emotion_large = emotion_large
+    calendar.sentence = sentence
+    calendar.save()
+
+    return Response({"calendar_id": calendar.id, "emotion_large": emotion_large}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_emotion(request):
+    user = request.user
+    today = timezone.now().date()
+    try:
+        calendar = Calendar.objects.get(user=user, year=today.year, month=today.month, day=today.day)
+    except Calendar.DoesNotExist:
+        return Response({"detail": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
+
+    emotion_small = request.data.get('emotion_small')
+    if not emotion_small:
+        return Response({"detail": "Emotion small is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    calendar.emotion_small = emotion_small
+    calendar.save()
+
+    return Response({"id": calendar.id, "question": calendar.question, "sentence": calendar.sentence,
+                     "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small},
+                    status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def emotion_list_create(request):
+    user = request.user
     if request.method == 'GET':
-        user = request.user
         emotions = Calendar.objects.filter(user=user)
         serializer = EmotionSerializer(emotions, many=True)
-        return Response(serializer.data, {"message": "successfully"})
-
-    elif request.method == 'POST':
-        serializer = EmotionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, {"message": "successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data)
