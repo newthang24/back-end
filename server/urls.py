@@ -1,14 +1,16 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
 
     path('start-walk/', views.start_walk, name='start-walk'),
-    path('end-walk/<int:pk>/', views.end_walk, name='end-walk'),
+    path('end-walk/<int:walk_id>/', views.end_walk, name='end-walk'),
     path('walk-report/<int:pk>/', views.walk_report, name='walk-report'),
     path('walk-history/<int:pk>/', views.walk_history, name='walk-history'),
     path('get-calendar/', views.get_calendar, name='get-calendar'),
     path('update-walk-score/<int:pk>/', views.update_walk_score, name='update-walk-score'),
+    path('monthly-record/<int:month>/', views.monthly_record, name='monthly_record'),
     
     #회원가입, 로그인, 로그아웃, 회원탈퇴
     path('signup/', views.user_create, name='user_create'),
@@ -28,4 +30,6 @@ urlpatterns = [
     path('analyze-emotion/', views.analyze_emotion, name='analyze-emotion'),
     # 새로운 감정 기록 저장
     path('save-emotion/', views.save_emotion, name='save-emotion'),
+
+
 ]
