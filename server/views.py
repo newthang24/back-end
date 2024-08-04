@@ -14,6 +14,7 @@ from .models import WalkHistory, Calendar, User, SRI
 from django.utils import timezone
 from statistics import mean
 from django.db.models import Count
+import requests
 
 #월별 산책 기록 평균 가져오기
 @api_view(['GET'])
@@ -42,32 +43,6 @@ def get_monthly_stats(request, year, month):
     }
     return Response(data,  status=status.HTTP_200_OK)
 
-
-# #월별 캘린더 데이터 가져오기
-# @api_view(['GET'])
-# def get_monthly_calendar(request, year, month):
-#     # 연도와 월에 해당하는 Calendar 객체들을 필터링
-#     calendars = Calendar.objects.filter(year=year, month=month)
-#
-#     # 각 Calendar 객체의 감정을 포함한 데이터 준비
-#     calendar_data = []
-#     for calendar in calendars:
-#         walk_histories = WalkHistory.objects.filter(calendar=calendar)
-#         username = calendar.user.username if calendar.user else 'Unknown'
-#         print(
-#             f"Calendar: {calendar.year}-{calendar.month}-{calendar.day} for {username}, Walk Histories: {walk_histories.count()}")  # 디버깅 메시지 추가
-#
-#         walk_data = {
-#             'message':'successfully',
-#             'date': calendar.day,
-#             'emotion_large': calendar.emotion_large,
-#             'emotion_small': calendar.emotion_small,
-#             'walk_histories': list(walk_histories.values())  # WalkHistory 객체들의 리스트를 포함
-#         }
-#         calendar_data.append(walk_data)
-#
-#     return Response(calendar_data, status=status.HTTP_200_OK)
-# 월별 캘린더 데이터 가져오기
 # 월별 캘린더 데이터 가져오기
 @api_view(['GET'])
 def get_monthly_calendar(request, year, month):
@@ -314,9 +289,15 @@ def analyze_emotion(request):
     if not question:
         return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Colab 모델을 사용하여 감정 분석 수행 (예시)
-    # emotion_large = call_colab_model(sentence)
-    emotion_large = "Happy"  # 여기에 Colab 모델을 호출하는 로직 추가
+    # Colab 모델을 사용하여 감정 분석 수행
+    colab_url = "https://9d29-34-19-89-121.ngrok-free.app/predict"  # 여기에 ngrok Public URL을 입력
+    try:
+        response = requests.post(colab_url, json={'text': sentence})
+        response_data = response.json()
+        emotion_large = response_data.get('emotion', 'Unknown')
+    except requests.exceptions.RequestException as e:
+        return Response({"detail": f"Error contacting Colab server: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     # 오늘 날짜의 Calendar ID 조회
     user = request.user
