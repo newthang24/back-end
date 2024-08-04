@@ -8,6 +8,9 @@ class CalendarSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class WalkHistorySerializer(serializers.ModelSerializer):
+    #calendar = CalendarSerializer()
+    calendar = serializers.PrimaryKeyRelatedField(queryset=Calendar.objects.all())
+
     class Meta:
         model = WalkHistory
         fields = '__all__'
@@ -18,7 +21,7 @@ class WalkHistoryEndSerializer(serializers.ModelSerializer):
         fields = ['end_time', 'stable_score', 'stable_loc', 'walk_score', 'distance']
 
 class WalkReportSerializer(serializers.ModelSerializer):
-    calendar = CalendarSerializer()
+    #calendar = CalendarSerializer()
     actual_walk_time = serializers.SerializerMethodField()
 
     class Meta:
