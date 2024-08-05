@@ -128,7 +128,7 @@ def end_walk(request, walk_id):
     try:
         walk_history = WalkHistory.objects.get(id=walk_id)
     except WalkHistory.DoesNotExist:
-        return Response({"detail": f"WalkHistory with id {pk} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": f"WalkHistory with id {walk_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data.copy()
     data['end_time'] = timezone.now()
