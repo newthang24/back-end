@@ -264,7 +264,8 @@ def sri_list_create(request):
         today_sri = SRI.objects.filter(user=request.user, sri_date__date=today).exists()
 
         response_data = {
-            'sri_scores': serializer.data,
+            'message': 'successfully',
+            #'sri_scores': serializer.data,
             'walk_count': walk_count,
             'sri_needed': sri_needed,
             'today_sri_done': today_sri  # 오늘 SRI 검사를 했는지 여부
@@ -403,6 +404,7 @@ def monthly_record(request, month):
     stable_average = mean(stable_score_values) if stable_score_values else None
 
     data = {
+        'message': 'successfully',
         "cactus_level": cactus_level,
         "score": score,
         "sri_score": sri_score,
