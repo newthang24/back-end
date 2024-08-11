@@ -21,7 +21,7 @@ urlpatterns = [
     path('stats/<int:year>/<int:month>/', views.get_monthly_stats, name='get-monthly-stats'),
     path('calendar/<int:year>/<int:month>/', views.get_monthly_calendar, name='get-monthly-calendar'),
 
-    # SRI 검사 결과 저장 및 불러오기
+    # SRI 검사 결과 저장 및 불러오기';
     path('sri/', views.sri_list_create, name='sri-list-create'),
     
     # 감정 기록 결과 저장 및 불러오기
