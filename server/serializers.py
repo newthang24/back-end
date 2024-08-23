@@ -26,7 +26,17 @@ class WalkReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WalkHistory
-        fields = '__all__'
+        fields = [
+            'id',
+            #'calendar',
+            'start_time',
+            'end_time',
+            'distance',
+            'actual_walk_time',
+            'walk_score',
+            #'course',
+            'stable_score'
+        ]
 
     def get_actual_walk_time(self, obj):
         if obj.end_time and obj.start_time:
