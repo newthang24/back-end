@@ -10,7 +10,8 @@ urlpatterns = [
     path('walk-history/<int:pk>/', views.walk_history, name='walk-history'),
     path('get-calendar/', views.get_calendar, name='get-calendar'),
     path('update-walk-score/<int:pk>/', views.update_walk_score, name='update-walk-score'),
-    path('monthly-record/<int:month>/', views.monthly_record, name='monthly_record'),
+    path('monthly-record/<int:year>/<int:month>/', views.monthly_record, name='monthly_record'),
+
     
     #회원가입, 로그인, 로그아웃, 회원탈퇴
     path('signup/', views.user_create, name='user_create'),
@@ -21,7 +22,7 @@ urlpatterns = [
     path('stats/<int:year>/<int:month>/', views.get_monthly_stats, name='get-monthly-stats'),
     path('calendar/<int:year>/<int:month>/', views.get_monthly_calendar, name='get-monthly-calendar'),
 
-    # SRI 검사 결과 저장 및 불러오기
+    # SRI 검사 결과 저장 및 불러오기';
     path('sri/', views.sri_list_create, name='sri-list-create'),
     
     # 감정 기록 결과 저장 및 불러오기
