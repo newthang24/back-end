@@ -290,7 +290,7 @@ def analyze_emotion(request):
         return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Colab 모델을 사용하여 감정 분석 수행
-    colab_url = "https://9d29-34-19-89-121.ngrok-free.app/predict"  # 여기에 ngrok Public URL을 입력
+    colab_url = "https://4aee-34-138-10-177.ngrok-free.app/predict"  # 여기에 ngrok Public URL을 입력
     try:
         response = requests.post(colab_url, json={'text': sentence})
         response_data = response.json()
@@ -313,7 +313,7 @@ def analyze_emotion(request):
     calendar.sentence = sentence
     calendar.save()
 
-    return Response({"calendar_id": calendar.id, "emotion_large": emotion_large}, status=status.HTTP_200_OK)
+    return Response({"calendar_id": calendar.id, "emotion_large": emotion_large, "message": "successfully"}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -335,7 +335,7 @@ def save_emotion(request):
 
 
     return Response({"id": calendar.id, "question": calendar.question, "sentence": calendar.sentence,
-                    "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small},
+                    "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small, "message": "successfully"},
                     status=status.HTTP_201_CREATED)
 
 
