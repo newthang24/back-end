@@ -428,7 +428,7 @@ def analyze_emotion(request):
     calendar.save()
 
     #return Response({"calendar_id": calendar.id, "emotion_large": emotion_large}, status=status.HTTP_200_OK)
-    return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
+    return Response({'message': 'successfully', "emotion_large": emotion_large}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
