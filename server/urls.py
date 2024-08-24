@@ -10,7 +10,8 @@ urlpatterns = [
     path('walk-history/<int:pk>/', views.walk_history, name='walk-history'),
     path('get-calendar/', views.get_calendar, name='get-calendar'),
     path('update-walk-score/<int:pk>/', views.update_walk_score, name='update-walk-score'),
-    path('monthly-record/<int:month>/', views.monthly_record, name='monthly_record'),
+    path('monthly-record/<int:year>/<int:month>/', views.monthly_record, name='monthly_record'),
+
     
     #회원가입, 로그인, 로그아웃, 회원탈퇴
     path('signup/', views.user_create, name='user_create'),
