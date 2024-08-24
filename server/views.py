@@ -404,7 +404,7 @@ def analyze_emotion(request):
         return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Colab 모델을 사용하여 감정 분석 수행
-    colab_url = "https://593e8365d6fe.ngrok.app/predict"  # 여기에 ngrok Public URL을 입력
+    colab_url = "https://newthangcolab.ngrok.app/predict"  # 여기에 ngrok Public URL을 입력
     try:
         response = requests.post(colab_url, json={'text': sentence})
         response_data = response.json()
