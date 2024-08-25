@@ -359,6 +359,7 @@ def sri_list_create(request):
             return Response({'message': 'successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# 사용자의 text를 바탕으로 감정 분석 및 대분류 감정 저장
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def analyze_emotion(request):
@@ -370,7 +371,7 @@ def analyze_emotion(request):
         return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Colab 모델을 사용하여 감정 분석 수행
-    colab_url = "https://newthangcolab.ngrok.app/predict"  # 여기에 ngrok Public URL을 입력
+    colab_url = "https://newthangcolab.ngrok.app/predict"  # Colab 실행하면 Colab과 자동으로 연결되도록 하는 endpoint
     try:
         response = requests.post(colab_url, json={'text': sentence})
         response_data = response.json()
@@ -394,9 +395,11 @@ def analyze_emotion(request):
     calendar.save()
 
     #return Response({"calendar_id": calendar.id, "emotion_large": emotion_large}, status=status.HTTP_200_OK)
+    # 성공 메시지뿐만 아니라 감정분석이 잘되어 대분류 감정을 저장했는지 확인
     return Response({'message': 'successfully', "emotion_large": emotion_large}, status=status.HTTP_200_OK)
 
 
+# 소분류 감정 저장(사용자가 대분류 감정을 토대로 세부 감정 직접 선택)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def save_emotion(request):
@@ -439,7 +442,7 @@ def emotion_list_create(request):
         #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
         emotions_data = serializer.data
         for emotion in emotions_data:
-            emotion['calendar_id'] = emotion.pop('id')  #'id'를 'calendar_id'로 변경
+            emotion['calendar_id'] = emotion.pop('id')  #'id'를 'calendar_id'로 변경(Calender Model의 고유한 pk id를 가리킴)
 
         response_data = {
             'message': 'successfully',
