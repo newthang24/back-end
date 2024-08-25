@@ -29,21 +29,6 @@ def get_monthly_stats(request, year, month):
     # 스트레스 지수 평균
     stress_avg = walks.aggregate(Avg('stable_score'))['stable_score__avg'] or 0
 
-    # # 누적 산책 거리와 시간
-    # total_distance = walks.aggregate(Sum('distance'))['distance__sum'] or 0
-    # total_time = walks.aggregate(Sum('end_time') - Sum('start_time'))['end_time__sum'] - walks.aggregate(Sum('start_time'))['start_time__sum']
-    #
-    # # 산책 안정도 평균
-    # stable_score_avg = walks.aggregate(Avg('stable_score'))['stable_score__avg'] or 0
-    #
-    # data = {
-    #     'message':'successfully',
-    #     'stress_avg': stress_avg,
-    #     'total_distance': total_distance,
-    #     'total_time': total_time,
-    #     'stable_score_avg': stable_score_avg,
-    # }
-    #단위 맞춰서 바꿈
     # 누적 산책 거리와 시간
     total_distance = walks.aggregate(Sum('distance'))['distance__sum'] or 0 / 1000  # meters to kilometers
     total_time = sum(
@@ -53,8 +38,8 @@ def get_monthly_stats(request, year, month):
     data = {
         'message': 'successfully',
         'stress_avg': stress_avg,
-        'total_distance': total_distance,  # kilometers
-        'total_time': total_time_hours,  # hours
+        'total_distance': total_distance,  # 단위: kilometers
+        'total_time': total_time_hours,  # 단위: hours
     }
 
     return Response(data,  status=status.HTTP_200_OK)
@@ -63,7 +48,7 @@ def get_monthly_stats(request, year, month):
 # 월별 캘린더 데이터 가져오기
 @api_view(['GET'])
 def get_monthly_calendar(request, year, month):
-    # 연도와 월에 해당하는 Calendar 객체들을 필터링
+    # 연도와 월에 해당하는 Calendar 객체들 필터링
     calendars = Calendar.objects.filter(year=year, month=month)
 
     # 각 Calendar 객체의 감정을 포함한 데이터 준비
@@ -74,8 +59,8 @@ def get_monthly_calendar(request, year, month):
             walk_histories_data = []
             for walk in walk_histories:
                 walk_histories_data.append({
-                    'start_time': walk.start_time.strftime('%H:%M') if walk.start_time else None,
-                    'end_time': walk.end_time.strftime('%H:%M') if walk.end_time else None,
+                    'start_time': walk.start_time.strftime('%H:%M') if walk.start_time else None, #시작 시간 간략히
+                    'end_time': walk.end_time.strftime('%H:%M') if walk.end_time else None, #종료 시간 간략히
                     'distance': walk.distance,
                     'stable_score': walk.stable_score,
                     'course': walk.course,
@@ -91,9 +76,9 @@ def get_monthly_calendar(request, year, month):
             calendar_data.append(walk_data)
 
     return Response(calendar_data, status=status.HTTP_200_OK)
-
     #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
 
+#캘린더 가져오기
 @api_view(['GET'])
 def get_calendar(request):
     today = timezone.now()
@@ -110,6 +95,7 @@ def get_calendar(request):
         calendar.emotion_small = None
 
     serializer = CalendarSerializer(calendar)
+    #주어진 날짜 기반으로 고유한 ID 생성
     date_based_id = f"{today.year % 100:02d}{today.month:02d}{today.day:02d}"
     response_data = {
         'message': 'successfully',
@@ -124,7 +110,9 @@ def get_calendar(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def start_walk(request):
+    # 현재 요청을 보낸 사용자 정보 가져오기
     user = request.user
+    # 오늘 날짜 기준으로 Calendar객체 가져오거나 생성
     today = timezone.now().date()
     calendar, created = Calendar.objects.get_or_create(
         year=today.year, month=today.month, day=today.day, user=user
@@ -133,78 +121,69 @@ def start_walk(request):
 
     # Playtime 값을 받아옴
     playtime = data.get('playtime')
+    # playtime 값이 가능한지 확인 (10, 15, 20, 25, 30분 중 하나여야 함)
     if playtime not in [10, 15, 20, 25, 30]:
         return Response({"detail": "Playtime must be one of the following values: 10, 15, 20, 25, 30 minutes."},
                         status=status.HTTP_400_BAD_REQUEST)
-
+    #데이터에 calendar, start_time, playtime 추가
     data['calendar'] = calendar.id
     data['start_time'] = timezone.now()
     data['playtime'] = playtime  # 선택된 playtime을 저장
 
-    # calendar_id = data.get('calendar')
-    # if not calendar_id:
-    #     return Response({"detail": "Calendar ID is required."}, status=status.HTTP_400_BAD_REQUEST)
-    #
-    # try:
-    #     calendar = Calendar.objects.get(id=calendar_id)
-    # except Calendar.DoesNotExist:
-    #     return Response({"detail": "Calendar not found."}, status=status.HTTP_404_NOT_FOUND)
-    #
-    # data['calendar'] = calendar.id
-    # data['start_time'] = timezone.now()
-    # serializer = WalkHistorySerializer(data=data)
-    # if serializer.is_valid():
-    #     walk_history = serializer.save()  # 저장된 객체를 가져옴
-    #     response_data = serializer.data
-    #     response_data['id'] = walk_history.id  # 응답에 id 추가
-    #     return Response({"message": "successfully", "walk_history_id": walk_history.id}, status=status.HTTP_200_OK)
-    #     #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
-    # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    #새 산책기록 생성
     serializer = WalkHistorySerializer(data=data)
     if serializer.is_valid():
         walk_history = serializer.save()
-
-        # 타이머 설정: playtime 후 자동으로 산책 종료
-        #Timer(playtime * 60, auto_end_walk, [walk_history.id]).start()
-
+        #응답 데이터에 새로 생성된 산책 기록ID 포함
         response_data = serializer.data
         response_data['id'] = walk_history.id
         return Response({"message": "successfully", "walk_history_id": walk_history.id}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# # 자동 산책 종료 함수
-# def auto_end_walk(walk_id):
-#     try:
-#         walk_history = WalkHistory.objects.get(id=walk_id)
-#         if not walk_history.end_time:  # 이미 종료되지 않은 경우에만 종료
-#             walk_history.end_time = timezone.now()
-#             walk_history.save()
-#
-#             calendar = walk_history.calendar
-#             calendar.walkfinished = True
-#             calendar.save()
-#     except WalkHistory.DoesNotExist:
-#         pass  # 산책 기록이 없으면 그냥 넘어감
-
-
+#산책 종료
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def end_walk(request, walk_id):
     try:
         walk_history = WalkHistory.objects.get(id=walk_id)
+    #walkhistory 존재하지 않으면 404 반환
     except WalkHistory.DoesNotExist:
         return Response({"detail": f"WalkHistory with id {walk_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data.copy()
     data['end_time'] = timezone.now()
 
+    # WalkHistory 객체 업데이트 - 시리얼라이저 설정
     serializer = WalkHistorySerializer(walk_history, data=data, partial=True)
     if serializer.is_valid():
-        walk_history = serializer.save()
+        walk_history = serializer.save() #유효성 검사 후 업데이트된 객체 저장
         calendar = walk_history.calendar
-        calendar.walkfinished = True
+        calendar.walkfinished = True #산책 완료
         calendar.save()
+
+        #사용자에게 점수 추가, 레벨 관리 로직
+        user = request.user
+        additional_points = 2  #산책 종료시 기본 점수
+
+        # stable_score에 따라 추가 점수 계산 (안정도가 80이상일시 3점추가, 90이상일시 5점 추가)
+        stable_score = walk_history.stable_score
+        if stable_score is not None:
+            if stable_score >= 90:
+                additional_points += 5
+            elif stable_score >= 80:
+                additional_points += 3
+
+        # distance에 따라 추가 점수 계산
+        distance = walk_history.distance
+        if distance is not None:
+            if distance >= 1500:
+                additional_points += 13 #1500미터 이상일 시 13점 추가 (기본점수 포함하면 15점)
+            elif distance >= 1000:
+                additional_points += 8 #1000미터 이상일 시 8점 추가
+            elif distance >= 500:
+                additional_points += 3 #500미터 이상일 시 3점 추가
+        # 추가 점수 추가, 레벨업 확인
+        user.add_points(additional_points)
         #return Response({"message": "successfully", "walk_history_id": walk_history.id}, status=status.HTTP_200_OK)
         return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -218,28 +197,19 @@ def walk_report(request, pk):
         walk = WalkHistory.objects.get(pk=pk)
     except WalkHistory.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
+    #요청 보낸 사용자 정보 가져오기
     user = User.objects.get(pk=request.user.id)
 
     summary_data = {
         'message': 'successfully',
+        # 총 산책 시간 분 단위로 계산
         'total_time': int(
             (walk.end_time - walk.start_time).total_seconds() / 60) if walk.end_time and walk.start_time else None,
-        'distance': int(walk.distance),
+        'distance': int(walk.distance),  #산책 거리 단위:meter
         'stable_score': int(walk.stable_score),
-        # 'points': user.points if user else None,
-        # 'level': user.level if user else None,
+        #'points': user.points if user else None,
+        #'level': user.level if user else None,
     }
-
-    # total_time_minutes = (walk.end_time - walk.start_time).total_seconds() / 60 if walk.end_time and walk.start_time else None
-    # distance_meters = walk.distance
-    #
-    # summary_data = {
-    #     'message': 'successfully',
-    #     'total_time': total_time_minutes,  # minutes
-    #     'distance': distance_meters,  # meters
-    # }
-
     return Response(summary_data,  status=status.HTTP_200_OK)
     #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
 
@@ -248,22 +218,19 @@ def walk_report(request, pk):
 @permission_classes([IsAuthenticated])
 def walk_history(request, pk):
     user = request.user
-
     try:
         walk = WalkHistory.objects.get(pk=pk)
     except WalkHistory.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-
+    # WalkHistory 객체 직렬화
     serializer = WalkReportSerializer(walk)
-
-    actual_walk_time_delta = walk.end_time - walk.start_time  # timedelta 객체
-    actual_walk_time_seconds = actual_walk_time_delta.total_seconds()  # 총 초로 변환
-    actual_walk_time = round(actual_walk_time_seconds / 60, 2)  # 분 단위로 변환하고 소수점 2자리까지 제한
-
+    # 실제 산책 시간 계산 (tart_time과 end_time의 차이 계산)
+    actual_walk_time_delta = walk.end_time - walk.start_time  #timedelta 객체
+    actual_walk_time_seconds = actual_walk_time_delta.total_seconds()  #총 초로 변환
+    actual_walk_time = round(actual_walk_time_seconds / 60, 2)  #분 단위로 변환하고 소수점 2자리까지 제한
+    # 시작 시간과 종료 시간을 HH:MM 형식으로 변환
     start_time = walk.start_time.strftime('%H:%M')
     end_time = walk.end_time.strftime('%H:%M')
-
     # Calendar 모델에 있는 emotion_large 필드를 가져옴
     #main_emotion = walk.calendar.emotion_large  # 해당 산책 기록의 대분류 감정
 
@@ -280,11 +247,9 @@ def walk_history(request, pk):
         }
     }
 
-    # 기존 id를 제거
+    #기존 id 제거
     del response_data['data']['id']
-
     return Response(response_data, status=status.HTTP_200_OK)
-
 
 #산책 만족도 저장
 @api_view(['PATCH'])
@@ -293,9 +258,10 @@ def update_walk_score(request, pk):
         walk = WalkHistory.objects.get(pk=pk)
     except WalkHistory.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-
+    #walk_score 값 가져오기
     walk_score = request.data.get('walk_score')
     if walk_score is not None:
+        # walk_score 존재할 경우 업데이트
         walk.walk_score = walk_score
         walk.save()
         #return Response({"detail": "successfully."}, status=status.HTTP_200_OK)
@@ -361,13 +327,13 @@ def sri_list_create(request):
         sri_scores = SRI.objects.filter(user=request.user)
         serializer = SRISerializer(sri_scores, many=True)
         #return Response(serializer.data)
-        # 지금까지의 산책 횟수를 계산
+        #지금까지의 산책 횟수 계산
         walk_count = WalkHistory.objects.filter(calendar__user=request.user).count()
 
-        # SRI 검사를 해야 할지 여부를 판단
+        #SRI 검사를 해야 할지 여부 판단
         sri_needed = (walk_count == 0) or (walk_count % 5 == 0)
 
-        # 오늘 SRI 검사를 했는지 여부 확인
+        #오늘 SRI 검사를 했는지 여부 확인
         today = timezone.now().date()
         #today_sri = SRI.objects.filter(user=request.user, sri_date__date=today).exists()
         today_sri_done = SRI.objects.filter(user=request.user, sri_date__date=today).exists()
@@ -473,12 +439,12 @@ def emotion_list_create(request):
         #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
         emotions_data = serializer.data
         for emotion in emotions_data:
-            emotion['calendar_id'] = emotion.pop('id')  # 'id'를 'calendar_id'로 변경
+            emotion['calendar_id'] = emotion.pop('id')  #'id'를 'calendar_id'로 변경
 
         response_data = {
             'message': 'successfully',
             'emotions': serializer.data,
-            'today_emotion_done': today_emotion_exists  # 오늘 감정 분석 여부
+            'today_emotion_done': today_emotion_exists  #오늘 감정 분석 여부
         }
 
         return Response(response_data)
