@@ -121,9 +121,9 @@ def start_walk(request):
 
     # Playtime 값을 받아옴
     playtime = data.get('playtime')
-    # playtime 값이 가능한지 확인 (10, 15, 20, 25, 30분 중 하나여야 함)
-    if playtime not in [10, 15, 20, 25, 30]:
-        return Response({"detail": "Playtime must be one of the following values: 10, 15, 20, 25, 30 minutes."},
+    # playtime 값이 가능한지 확인 (5,10, 15, 20, 25, 30분 중 하나여야 함)
+    if playtime not in [5, 10, 15, 20, 25, 30]:
+        return Response({"detail": "Playtime must be one of the following values: 5, 10, 15, 20, 25, 30 minutes."},
                         status=status.HTTP_400_BAD_REQUEST)
     #데이터에 calendar, start_time, playtime 추가
     data['calendar'] = calendar.id
