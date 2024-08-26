@@ -464,6 +464,9 @@ def monthly_record(request, year, month):
     cactus_level = user.level
     score = user.points
 
+    # 회원의 닉네임
+    nickname = user.nickname
+
     # 가장 최근의 SRI 검사 결과
     latest_sri = SRI.objects.filter(user=user).order_by('-sri_date').first()
     sri_score = latest_sri.sri_score if latest_sri else None
@@ -499,8 +502,12 @@ def monthly_record(request, year, month):
     emotion_analysis = []
     for emotion in emotions:
         # 해당 날짜의 첫 번째 산책 기록 가져오기
-        first_walk = WalkHistory.objects.filter(calendar=emotion).order_by('start_time').first()
-        walkhistory_id = first_walk.id if first_walk else None
+        #first_walk = WalkHistory.objects.filter(calendar=emotion).order_by('start_time').first()
+        #walkhistory_id = first_walk.id if first_walk else None
+
+        # 수정된 코드: 해당 날짜의 모든 산책 기록의 ID 가져오기
+        walks_on_day = WalkHistory.objects.filter(calendar=emotion).order_by('start_time')  # 수정된 부분
+        walkhistory_id = [walk.id for walk in walks_on_day]  # 수정된 부분
 
         emotion_data = {
             'date': emotion.day,
@@ -519,6 +526,7 @@ def monthly_record(request, year, month):
 
     data = {
         'message': 'successfully',
+        "nickname": nickname,
         "cactus_level": cactus_level,
         "cactus_score": score,
         "sri_score": sri_score,
