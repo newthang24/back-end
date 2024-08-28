@@ -79,32 +79,50 @@ def get_monthly_calendar(request, year, month):
     #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
 
 #캘린더 가져오기
-@api_view(['GET'])
+@api_view(['POST'])
 def get_calendar(request):
+    # 오늘 날짜를 자동으로 가져옴
     today = timezone.now()
-    calendar, created = Calendar.objects.get_or_create(
-        year=today.year,
-        month=today.month,
-        day=today.day,
-        user_id=request.user.id,
-    )
+    year = today.year
+    month = today.month
+    day = today.day
+    
+    # 사용자의 ID를 가져옴
+    user_id = request.user.id
 
-    # 산책이 완료되었는지 확인
-    if not calendar.walkfinished:
-        calendar.emotion_large = None
-        calendar.emotion_small = None
+    try:
+        # Calendar 객체를 생성하거나 가져옴
+        calendar, created = Calendar.objects.get_or_create(
+            year=year,
+            month=month,
+            day=day,
+            user_id=user_id,
+        )
 
-    serializer = CalendarSerializer(calendar)
-    #주어진 날짜 기반으로 고유한 ID 생성
-    date_based_id = f"{today.year % 100:02d}{today.month:02d}{today.day:02d}"
-    response_data = {
-        'message': 'successfully',
-        "calendar_id": date_based_id,
-        **serializer.data
-    }
-    #return Response(response_data, status=status.HTTP_200_OK)
-    return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
+        # 산책이 완료되었는지 확인
+        if not calendar.walkfinished:
+            calendar.emotion_large = None
+            calendar.emotion_small = None
+            calendar.save()
 
+        # 고유한 calendar_id 생성
+        date_based_id = f"{year % 100:02d}{month:02d}{day:02d}"
+
+        # 직렬화된 데이터 준비
+        serializer = CalendarSerializer(calendar)
+        
+        # 응답 데이터를 준비
+        response_data = {
+            'message': 'Calendar created successfully' if created else 'Calendar already exists',
+            "calendar_id": date_based_id,
+            **serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    except Exception as e:
+        # 오류 발생 시, 500 상태 코드와 함께 오류 메시지를 반환합니다.
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 #산책 시작
 @api_view(['POST'])
