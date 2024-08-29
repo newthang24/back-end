@@ -541,3 +541,6 @@ def monthly_record(request, year, month):
     }
 
     return Response(data, status=status.HTTP_200_OK)
+
+
+
