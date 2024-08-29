@@ -418,24 +418,24 @@ def walk_once_report(request, pk):
     start_time = walk.start_time.strftime('%H:%M')
     end_time = walk.end_time.strftime('%H:%M')
     # Calendar 모델에 있는 emotion_large 필드를 가져옴
-    emotion_large = walk.calendar.emotion_large  # 해당 산책 기록의 대분류 감정
-    emotion_small = walk.calendar.emotion_small
+    #emotion_large = walk.calendar.emotion_large  # 해당 산책 기록의 대분류 감정
+    #emotion_small = walk.calendar.emotion_small
     # response_data에 id를 walk_history_id로 변경하고 감정 분석 결과 추가
     response_data = {
         'message': 'successfully',
-        'data': {
-            **serializer.data,  # serializer data를 그대로 사용하되
-            'walk_history_id': serializer.data['id'],  # id를 walk_history_id로 추가
-            'emotion_large': emotion_large,
-            'emotion_small': emotion_small,# Calendar의 emotion_large 필드를 추가
-            'actual_walk_time': int(actual_walk_time), # 초를 분으로 변환하여 추가
-            'start_time': start_time,  # HH:MM 형식으로 변환된 start_time
-            'end_time': end_time,  # HH:MM 형식으로 변환된 end_time
-        }
+        'start_time': start_time,
+        'end_time': end_time,
+        'distance': walk.distance,
+        'actual_walk_time': int(actual_walk_time),
+        'walk_score': walk.walk_score,
+        'stable_score': walk.stable_score,
+        'walk_history_id': serializer.data['id'],
+        #'emotion_large': emotion_large,
+        #'emotion_small': emotion_small,
     }
 
     #기존 id 제거
-    del response_data['data']['id']
+    #del response_data['data']['id']
     return Response(response_data, status=status.HTTP_200_OK)
 
 
