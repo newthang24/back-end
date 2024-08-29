@@ -161,11 +161,11 @@ def sri_list_create(request):
 @permission_classes([IsAuthenticated])
 def emotion_analyze_large(request):
     sentence = request.data.get('sentence')
-    question = request.data.get('question')
+    #question = request.data.get('question')
     if not sentence:
         return Response({"detail": "Sentence is required."}, status=status.HTTP_400_BAD_REQUEST)
-    if not question:
-        return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
+    #if not question:
+    #    return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Colab 모델을 사용하여 감정 분석 수행
     colab_url = "https://newthangcolab.ngrok.app/predict"  # Colab 실행하면 Colab과 자동으로 연결되도록 하는 endpoint
@@ -186,7 +186,7 @@ def emotion_analyze_large(request):
         return Response({"detail": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
 
     # 감정 결과와 질문 저장
-    calendar.question = question
+    #calendar.question = question
     calendar.emotion_large = emotion_large
     calendar.sentence = sentence
     calendar.save()
