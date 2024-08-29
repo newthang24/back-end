@@ -529,6 +529,7 @@ def walk_monthly_report(request, year, month):
 
     return Response(data, status=status.HTTP_200_OK)
 
+
 # 키넥트 서버에서 받아오는 api
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -548,3 +549,4 @@ def kinect_data(request, walk_id):
     walk_history.save()
 
     return Response({"message": "successfully", "stable_score": kinect_data}, status=status.HTTP_200_OK)
+

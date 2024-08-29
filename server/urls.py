@@ -35,4 +35,5 @@ urlpatterns = [
     # 키넥트
     path('kinect-data/<int:walk_id>/', views.kinect_data, name='kinect_data')
 
+
 ]
