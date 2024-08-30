@@ -96,7 +96,10 @@ class Calendar(models.Model):
     emotion_small = models.CharField(max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return f"Calendar: {self.year}-{self.month}-{self.day} for {self.user.username}"
+        if self.user:
+            return f"Calendar: {self.year}-{self.month}-{self.day} for {self.user.username}"
+        else:
+            return f"Calendar: {self.year}-{self.month}-{self.day} (No User)"
 
 class WalkHistory(models.Model):
     calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
