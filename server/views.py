@@ -17,9 +17,11 @@ from statistics import mean
 from django.db.models import Count
 import requests
 from threading import Timer
+from rest_framework.permissions import AllowAny
 
 # 회원가입
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def user_signup(request):
     if request.method == 'POST':
         serializer = UserSerializer(data=request.data)
@@ -34,6 +36,7 @@ def user_signup(request):
 
 # 로그인
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def user_login(request):
     if request.method == 'POST':
         username = request.data.get('username')
