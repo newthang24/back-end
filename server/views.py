@@ -217,10 +217,6 @@ def emotion_save_small(request):
     calendar.emotion_small = emotion_small
     calendar.save()
 
-
-    # return Response({"id": calendar.id, "question": calendar.question, "sentence": calendar.sentence,
-    #                 "emotion_large": calendar.emotion_large, "emotion_small": calendar.emotion_small},
-    #                 status=status.HTTP_201_CREATED)
     return Response({'message': 'successfully'}, status=status.HTTP_201_CREATED)
 
 # 감정 기록 결과 저장 및 불러오기, 오늘 감정 분석 여부 판단
