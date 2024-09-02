@@ -73,6 +73,7 @@ def user_delete(request):
 
 #캘린더 가져오기
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def get_calendar(request):
     # 오늘 날짜를 자동으로 가져옴
     today = timezone.now()
@@ -383,6 +384,7 @@ def walk_simple_report(request, pk):
 
 #산책 만족도 저장
 @api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
 def walk_satisfy_update(request, pk):
     try:
         walk = WalkHistory.objects.get(pk=pk)
