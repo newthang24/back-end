@@ -28,10 +28,7 @@ def user_signup(request):
         if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
-            #토큰 response에 띄워야할 경우
             return Response({'token': token.key, "message": "successfully"}, status=status.HTTP_201_CREATED)
-            #message 만 띄워도 될 경우
-            #return Response({'message': 'successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # 로그인
@@ -43,33 +40,30 @@ def user_login(request):
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
             token, created = Token.objects.get_or_create(user=user)
-            csrf_token = get_token(request)
-            #token, csrf_token 모두 response에 띄움
-            return Response({"token": token.key, "csrf_token": csrf_token, "message": "successfully"}, status=status.HTTP_200_OK)
-            #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
+            return Response({"token": token.key, "message": "successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 # 로그아웃
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])  # 인증된 사용자만 접근 가능
 def user_logout(request):
     if request.method == 'POST':
         request.user.auth_token.delete()
-        logout(request)
         return Response({"message": "successfully"}, status=status.HTTP_200_OK)
 
 # 회원 탈퇴
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def user_delete(request):
     if request.method == 'DELETE':
         user = request.user
         if user.is_authenticated:
-            # 로그아웃 후 계정 삭제
-            logout(request)
+            user.auth_token.delete()
             user.delete()
             return Response({"message": "successfully"}, status=status.HTTP_200_OK)
         return Response({"message": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 #캘린더 가져오기
 @api_view(['POST'])
