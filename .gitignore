@@ -164,3 +164,4 @@ cython_debug/
 # data base infomantion
 my_settings.py
 secret_key.py
+secret.json
