@@ -2,6 +2,7 @@ import math
 from datetime import datetime
 from pathlib import Path
 from . import secret_key
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
