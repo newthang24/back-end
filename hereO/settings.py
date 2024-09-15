@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = secret_key.SECRET_KEY
 DEBUG = True
-ALLOWED_HOSTS = [".ap-northeast-2.compute.amazonaws.com"]
+ALLOWED_HOSTS = ["*.compute.amazonaws.com"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
