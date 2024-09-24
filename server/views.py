@@ -316,6 +316,14 @@ def walk_end(request, walk_id):
     data = request.data.copy()
     data['end_time'] = timezone.now()
 
+    # 키넥트 데이터 처리
+    kinect_data = request.data.get('kinect_data')
+    if not kinect_data:
+        return Response({"detail": "No Kinect data provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # WalkHistory의 stable_score 업데이트
+    walk_history.stable_score = kinect_data
+
     # WalkHistory 객체 업데이트 - 시리얼라이저 설정
     serializer = WalkHistorySerializer(walk_history, data=data, partial=True)
     if serializer.is_valid():
@@ -523,25 +531,3 @@ def walk_monthly_report(request, year, month):
     }
 
     return Response(data, status=status.HTTP_200_OK)
-
-
-# 키넥트 서버에서 받아오는 api
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def kinect_data(request, walk_id):
-    try:
-        walk_history = WalkHistory.objects.get(id=walk_id)
-    except WalkHistory.DoesNotExist:
-        return Response({"detail": f"WalkHistory with id {walk_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
-
-    kinect_data = request.data.get('kinect_data')
-
-    if not kinect_data:
-        return Response({"detail": "No Kinect data provided."}, status=status.HTTP_400_BAD_REQUEST)
-
-    # WalkHistory의 stable_score 업데이트
-    walk_history.stable_score = kinect_data
-    walk_history.save()
-
-    return Response({"message": "successfully", "stable_score": kinect_data}, status=status.HTTP_200_OK)
-

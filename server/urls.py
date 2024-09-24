@@ -32,8 +32,6 @@ urlpatterns = [
     path('walk-once-report/<int:pk>/', views.walk_once_report, name='walk-once-report'),
     path('walk-monthly-report/<int:year>/<int:month>/', views.walk_monthly_report, name='walk-monthly-report'),
     
-    # 키넥트
-    path('kinect-data/<int:walk_id>/', views.kinect_data, name='kinect_data')
 
 
 ]
