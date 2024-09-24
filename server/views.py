@@ -452,11 +452,11 @@ def walk_monthly_report(request, year, month):
     # 가장 최근의 SRI 검사 결과
     latest_sri = SRI.objects.filter(user=user).order_by('-sri_date').first()
     sri_score = latest_sri.sri_score if latest_sri else None
-    sri_date = latest_sri.sri_date.strftime('%Y.%m.%d') if latest_sri else None
+    sri_date = latest_sri.sri_date.strftime('%Y-%m-%d') if latest_sri else None
 
     # 최근 7개의 SRI 검사 결과
     recent_sri_scores = SRI.objects.filter(user=user).order_by('-sri_date')[:7].values('sri_date', 'sri_score')
-    sri_scores = [{'date': score['sri_date'].strftime('%Y-%m-%d'), 'sri_score': score['sri_score']} for score in
+    sri_scores = [{'date': score['sri_date'].strftime('%m/%d'), 'sri_score': score['sri_score']} for score in
                 recent_sri_scores]
     sri_score_values = [score['sri_score'] for score in sri_scores if score['sri_score'] is not None]
     sri_average = mean(sri_score_values) if sri_score_values else None
@@ -492,7 +492,7 @@ def walk_monthly_report(request, year, month):
         walkhistory_id = [walk.id for walk in walks_on_day]  # 수정된 부분
 
         emotion_data = {
-            'date': emotion.day,
+            'date': f"{emotion.year:04d}-{emotion.month:02d}-{emotion.day:02d}",
             'emotion': emotion.emotion_large,
             'walkhistory_id': walkhistory_id
         }
@@ -501,7 +501,7 @@ def walk_monthly_report(request, year, month):
     # 가장 최근 7개의 stable_score를 가져옴
     recent_stable_scores = WalkHistory.objects.filter(calendar__user=user).order_by('-start_time')[:7].values(
         'start_time', 'stable_score')
-    stable_scores = [{'date': score['start_time'].date(), 'stable_score': score['stable_score']} for score in
+    stable_scores = [{'date': score['start_time'].strftime('%m/%d'), 'stable_score': score['stable_score']} for score in
                     recent_stable_scores]
     stable_score_values = [score['stable_score'] for score in stable_scores if score['stable_score'] is not None]
     stable_average = mean(stable_score_values) if stable_score_values else None
