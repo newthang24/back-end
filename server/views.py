@@ -385,21 +385,22 @@ def walk_simple_report(request, pk):
     #return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
 
 #산책 만족도 저장
-@api_view(['PATCH'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def walk_satisfy_update(request, pk):
     try:
         walk = WalkHistory.objects.get(pk=pk)
     except WalkHistory.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
-    #walk_score 값 가져오기
+
+    # walk_score 값 가져오기
     walk_score = request.data.get('walk_score')
     if walk_score is not None:
         # walk_score 존재할 경우 업데이트
         walk.walk_score = walk_score
         walk.save()
-        #return Response({"detail": "successfully."}, status=status.HTTP_200_OK)
         return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
+    
     return Response({"detail": "Walk score is required."}, status=status.HTTP_400_BAD_REQUEST)
 
 # 1개의 산책 기록 조회
