@@ -237,8 +237,8 @@ def emotion_list_create(request):
 
     # 해당 날짜에 해당하는 감정 분석 기록을 가져옴
     try:
-        emotions = Calendar.objects.filter(user=user, year=year, month=month, day=day)
-        if not emotions.exists():
+        calendar_record = Calendar.objects.filter(user=user, year=year, month=month, day=day).first()
+        if not calendar_record or not calendar_record.emotion_large:
             return Response({
                 'message': 'No emotion data found for the specified date.',
                 'today_emotion_done': False
@@ -253,7 +253,7 @@ def emotion_list_create(request):
         return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # 감정 데이터가 존재할 경우, 직렬화
-    serializer = EmotionSerializer(emotions, many=True)
+    serializer = EmotionSerializer(calendar_record, many=True)
     emotions_data = serializer.data
 
     # 감정 데이터에 날짜 정보 추가
