@@ -253,13 +253,21 @@ def emotion_list_create(request):
         return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # 감정 데이터가 존재할 경우, 직렬화
-    serializer = EmotionSerializer(calendar_record, many=True)
+    serializer = EmotionSerializer(calendar_record)
     emotions_data = serializer.data
 
-    # 감정 데이터에 날짜 정보 추가
-    for emotion in emotions_data:
-        emotion['calendar_id'] = emotion.pop('id')  # 'id'를 'calendar_id'로 변경
-        emotion['date'] = f"{year}-{month:02d}-{day:02d}"  # 날짜를 'YYYY-MM-DD' 형식으로 추가
+    print(f"Serialized emotions data: {emotions_data}")
+
+    # 감정 데이터가 딕셔너리인지 확인
+    if isinstance(emotions_data, dict):
+        # 감정 데이터에 날짜 정보 추가
+        emotions_data['calendar_id'] = emotions_data.get('id')  # 'id'를 'calendar_id'로 복사
+        emotions_data['date'] = f"{year}-{month:02d}-{day:02d}"  # 날짜를 'YYYY-MM-DD' 형식으로 추가
+        del emotions_data['id']  # 'id' 키를 제거
+    else:
+        return Response({"detail": "Invalid data format from serializer."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
     response_data = {
         'message': 'successfully',
