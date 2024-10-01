@@ -61,16 +61,16 @@ class User(AbstractBaseUser, PermissionsMixin):
     def check_level_up(self):
         level_thresholds = {
             1: 100,
-            2: 200,
-            3: 300,
-            4: 400,
-            5: 500,
+            # 2: 200,
+            # 3: 300,
+            # 4: 400,
+            # 5: 500,
             # Add more levels and their thresholds as needed
         }
         # 현재 레벨이 임계값에 도달할 때마다 레벨을 올리고 포인트를 0으로 초기화
-        while self.level in level_thresholds and self.points >= level_thresholds[self.level]:
+        while self.points >= 100:
             self.level += 1
-            self.points = 0  # 레벨업 후 포인트를 0으로 초기화
+            self.points -= 100  # 레벨업 후 포인트를 0으로 초기화
 
 class SRI(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
