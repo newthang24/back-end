@@ -74,12 +74,12 @@ def get_calendar(request):
     year = today.year
     month = today.month
     day = today.day
-    
+
     # 사용자의 ID를 가져옴
     user_id = request.user.id
 
     try:
-        # Calendar 객체를 생성하거나 가져옴
+        # 오늘 날짜에 해당하는 Calendar 객체를 가져옴. 존재하지 않으면 새로 생성.
         calendar, created = Calendar.objects.get_or_create(
             year=year,
             month=month,
@@ -87,8 +87,8 @@ def get_calendar(request):
             user_id=user_id,
         )
 
-        # 산책이 완료되었는지 확인
-        if not calendar.walkfinished:
+        # 캘린더가 새로 생성된 경우만 감정 데이터를 리셋
+        if created:
             calendar.emotion_large = None
             calendar.emotion_small = None
             calendar.save()
@@ -98,7 +98,7 @@ def get_calendar(request):
 
         # 직렬화된 데이터 준비
         serializer = CalendarSerializer(calendar)
-        
+
         # 응답 데이터를 준비
         response_data = {
             'message': 'Calendar created successfully' if created else 'Calendar already exists',
@@ -111,6 +111,7 @@ def get_calendar(request):
     except Exception as e:
         # 오류 발생 시, 500 상태 코드와 함께 오류 메시지를 반환합니다.
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 # SRI 점수 POST, GET
 @api_view(['GET', 'POST'])
