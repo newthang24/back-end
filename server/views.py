@@ -343,7 +343,7 @@ def walk_end(request, walk_id):
 
         #사용자에게 점수 추가, 레벨 관리 로직
         user = request.user
-        additional_points = 50  #산책 종료시 기본 점수
+        additional_points = 7  #산책 종료시 기본 점수
 
         # stable_score에 따라 추가 점수 계산 (안정도가 80이상일시 3점추가, 90이상일시 5점 추가)
         stable_score = walk_history.stable_score
