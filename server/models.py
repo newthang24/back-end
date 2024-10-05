@@ -97,9 +97,9 @@ class Calendar(models.Model):
 
     def __str__(self):
         if self.user:
-            return f"Calendar: {self.year}-{self.month}-{self.day} for {self.user.username}"
+            return f"Calendar[{self.pk}]: {self.year}-{self.month}-{self.day} for {self.user.username}"
         else:
-            return f"Calendar: {self.year}-{self.month}-{self.day} (No User)"
+            return f"Calendar[{self.pk}]: {self.year}-{self.month}-{self.day} (No User)"
 
 class WalkHistory(models.Model):
     calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE)
@@ -112,4 +112,4 @@ class WalkHistory(models.Model):
     course = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return f"Walk History: {self.start_time} to {self.end_time}"
+        return f"Walk History Id: {self.pk} / {self.start_time} ~ {self.end_time}"
