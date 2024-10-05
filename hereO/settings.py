@@ -11,6 +11,8 @@ SECRET_KEY = secret_key.SECRET_KEY
 DEBUG = True
 ALLOWED_HOSTS = [
     'ec2-54-180-229-108.ap-northeast-2.compute.amazonaws.com',
+    'hereomyreport.com',
+    '43.203.96.162',
     'localhost',       # 로컬 테스트를 위해 추가
     '127.0.0.1',       # 로컬 테스트를 위해 추가
 ]
