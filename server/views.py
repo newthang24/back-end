@@ -242,7 +242,8 @@ def emotion_list_create(request):
         if not calendar_record or not calendar_record.emotion_large:
             return Response({
                 'message': 'No emotion data found for the specified date.',
-                'today_emotion_done': False
+                'today_emotion_done': False,
+                'emotions': None  # 감정 데이터가 없으면 None으로 반환
             }, status=status.HTTP_200_OK)
     except Calendar.DoesNotExist:
         return Response({
