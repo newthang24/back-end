@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = secret_key.SECRET_KEY
 DEBUG = True
 ALLOWED_HOSTS = [
-    'ec2-54-180-229-108.ap-northeast-2.compute.amazonaws.com',
+    'ec2-43-203-221-193.ap-northeast-2.compute.amazonaws.com',
     'hereomyreport.com',
     '43.203.96.162',
     'localhost',       # 로컬 테스트를 위해 추가
@@ -109,5 +109,5 @@ CORS_ALLOW_ALL_ORIGINS = False  # 모든 도메인을 허용하지 않음
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # React 앱의 출처 (프론트엔드 주소)
     'http://127.0.0.1:3000',  # 로컬 주소 (필요한 경우)
-    'http://ec2-54-180-229-108.ap-northeast-2.compute.amazonaws.com',  # 배포된 서버 주소
+    'http://ec2-43-203-221-193.ap-northeast-2.compute.amazonaws.com',  # 배포된 서버 주소
 ]
