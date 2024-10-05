@@ -26,11 +26,13 @@ INSTALLED_APPS = [
     'server',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 AUTH_USER_MODEL = 'server.User'
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -100,3 +102,11 @@ REST_FRAMEWORK = {
 }
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# CORS 설정
+CORS_ALLOW_ALL_ORIGINS = False  # 모든 도메인을 허용하지 않음
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # React 앱의 출처 (프론트엔드 주소)
+    'http://127.0.0.1:3000',  # 로컬 주소 (필요한 경우)
+    'http://ec2-54-180-229-108.ap-northeast-2.compute.amazonaws.com',  # 배포된 서버 주소
+]
