@@ -423,13 +423,18 @@ def walk_once_report(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
     # WalkHistory 객체 직렬화
     serializer = WalkReportSerializer(walk)
-    # 실제 산책 시간 계산 (tart_time과 end_time의 차이 계산)
-    actual_walk_time_delta = walk.end_time - walk.start_time  #timedelta 객체
-    actual_walk_time_seconds = actual_walk_time_delta.total_seconds()  #총 초로 변환
-    actual_walk_time = round(actual_walk_time_seconds / 60, 2)  #분 단위로 변환하고 소수점 2자리까지 제한
-    # 시작 시간과 종료 시간을 HH:MM 형식으로 변환
-    start_time = walk.start_time.strftime('%H:%M')
-    end_time = walk.end_time.strftime('%H:%M')
+    # 실제 산책 시간 계산 (start_time과 end_time이 존재할 때만 계산)
+    if walk.start_time and walk.end_time:
+        actual_walk_time_delta = walk.end_time - walk.start_time
+        actual_walk_time_seconds = actual_walk_time_delta.total_seconds()
+        actual_walk_time = round(actual_walk_time_seconds / 60, 2)  # 분 단위로 변환
+    else:
+        actual_walk_time = 0  # 시작 시간 또는 종료 시간이 없으면 0분으로 설정
+
+    # 시작 시간과 종료 시간을 HH:MM 형식으로 변환 (start_time 또는 end_time이 None일 경우 처리)
+    start_time = walk.start_time.strftime('%H:%M') if walk.start_time else '00:00'
+    end_time = walk.end_time.strftime('%H:%M') if walk.end_time else '00:00'
+
     # Calendar 모델에 있는 emotion_large 필드를 가져옴
     #emotion_large = walk.calendar.emotion_large  # 해당 산책 기록의 대분류 감정
     #emotion_small = walk.calendar.emotion_small
