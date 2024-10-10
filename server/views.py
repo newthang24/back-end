@@ -162,9 +162,7 @@ def emotion_analyze_large(request):
     sentence = request.data.get('sentence')
     #question = request.data.get('question')
     if not sentence:
-        return Response({"detail": "Sentence is required."}, status=status.HTTP_400_BAD_REQUEST)
-    #if not question:
-    #    return Response({"detail": "Question is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Sentence is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Colab 모델을 사용하여 감정 분석 수행
     colab_url = "https://newthangcolab.ngrok.app/predict"  # Colab 실행하면 Colab과 자동으로 연결되도록 하는 endpoint
@@ -177,7 +175,7 @@ def emotion_analyze_large(request):
         if emotion_large == 'neutral':
             emotion_large = 'joy'
     except requests.exceptions.RequestException as e:
-        return Response({"detail": f"Error contacting Colab server: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"message": f"Error contacting Colab server: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
     # 오늘 날짜의 Calendar ID 조회
@@ -186,7 +184,7 @@ def emotion_analyze_large(request):
     try:
         calendar = Calendar.objects.get(user=user, year=today.year, month=today.month, day=today.day)
     except Calendar.DoesNotExist:
-        return Response({"detail": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
 
     # 감정 결과와 질문 저장
     #calendar.question = question
@@ -208,11 +206,11 @@ def emotion_save_small(request):
     try:
         calendar = Calendar.objects.get(user=user, year=today.year, month=today.month, day=today.day)
     except Calendar.DoesNotExist:
-        return Response({"detail": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": "Calendar entry does not exist for today."}, status=status.HTTP_404_NOT_FOUND)
 
     emotion_small = request.data.get('emotion_small')
     if not emotion_small:
-        return Response({"detail": "Emotion small is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Emotion small is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     calendar.emotion_small = emotion_small
     calendar.save()
@@ -229,7 +227,7 @@ def emotion_list_create(request):
     today_date_str = request.query_params.get('todayDate')
 
     if not today_date_str:
-        return Response({"detail": "todayDate parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "todayDate parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # 날짜 문자열을 파싱하여 년도, 월, 일로 변환
     try:
@@ -238,7 +236,7 @@ def emotion_list_create(request):
         month = date_obj.month
         day = date_obj.day
     except ValueError:
-        return Response({"detail": "Invalid todayDate format. Expected 'YYYY-MM-DD'."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Invalid todayDate format. Expected 'YYYY-MM-DD'."}, status=status.HTTP_400_BAD_REQUEST)
 
     # 해당 날짜에 해당하는 감정 분석 기록을 가져옴
     try:
@@ -256,7 +254,7 @@ def emotion_list_create(request):
         }, status=status.HTTP_200_OK)
     except Exception as e:
         # 추가적인 예외를 잡아내기 위한 블록
-        return Response({"detail": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     # 감정 데이터가 존재할 경우, 직렬화
     serializer = EmotionSerializer(calendar_record)
@@ -271,7 +269,7 @@ def emotion_list_create(request):
         emotions_data['date'] = f"{year}-{month:02d}-{day:02d}"  # 날짜를 'YYYY-MM-DD' 형식으로 추가
         del emotions_data['id']  # 'id' 키를 제거
     else:
-        return Response({"detail": "Invalid data format from serializer."},
+        return Response({"message": "Invalid data format from serializer."},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -300,7 +298,7 @@ def walk_start(request):
     playtime = data.get('playtime')
     # playtime 값이 가능한지 확인 (5,10, 15, 20, 25, 30분 중 하나여야 함)
     if playtime not in [5, 10, 15, 20, 25, 30]:
-        return Response({"detail": "Playtime must be one of the following values: 5, 10, 15, 20, 25, 30 minutes."},
+        return Response({"message": "Playtime must be one of the following values: 5, 10, 15, 20, 25, 30 minutes."},
                         status=status.HTTP_400_BAD_REQUEST)
     #데이터에 calendar, start_time, playtime 추가
     data['calendar'] = calendar.id
@@ -325,7 +323,7 @@ def walk_end(request, walk_id):
         walk_history = WalkHistory.objects.get(id=walk_id)
     #walkhistory 존재하지 않으면 404 반환
     except WalkHistory.DoesNotExist:
-        return Response({"detail": f"WalkHistory with id {walk_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"message": f"WalkHistory with id {walk_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data.copy()
     data['end_time'] = timezone.now()
@@ -333,7 +331,7 @@ def walk_end(request, walk_id):
     # 키넥트 데이터 처리
     kinect_data = request.data.get('kinect_data')
     if not kinect_data:
-        return Response({"detail": "No Kinect data provided."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "No Kinect data provided."}, status=status.HTTP_400_BAD_REQUEST)
 
     # WalkHistory의 stable_score 업데이트
     walk_history.stable_score = kinect_data
@@ -415,7 +413,7 @@ def walk_satisfy_update(request, pk):
         walk.save()
         return Response({'message': 'successfully'}, status=status.HTTP_200_OK)
     
-    return Response({"detail": "Walk score is required."}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"message": "Walk score is required."}, status=status.HTTP_400_BAD_REQUEST)
 
 # 1개의 산책 기록 조회
 @api_view(['GET'])
