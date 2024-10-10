@@ -172,6 +172,10 @@ def emotion_analyze_large(request):
         response = requests.post(colab_url, json={'text': sentence})
         response_data = response.json()
         emotion_large = response_data.get('emotion', 'Unknown')
+        
+        # 감정이 neutral일 경우 joy로 치환
+        if emotion_large == 'neutral':
+            emotion_large = 'joy'
     except requests.exceptions.RequestException as e:
         return Response({"detail": f"Error contacting Colab server: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
