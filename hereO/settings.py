@@ -110,4 +110,5 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # React 앱의 출처 (프론트엔드 주소)
     'http://127.0.0.1:3000',  # 로컬 주소 (필요한 경우)
     'http://ec2-43-203-221-193.ap-northeast-2.compute.amazonaws.com',  # 배포된 서버 주소
+    'https://hereo.netlify.app',
 ]

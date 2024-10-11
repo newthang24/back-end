@@ -136,10 +136,7 @@ def sri_list_create(request):
             sri_needed = False
         response_data = {
             'message': 'successfully',
-            #'sri_scores': serializer.data,
-            #'walk_count': walk_count, #필요없대
             'sri_needed': sri_needed,
-            #'today_sri_done': today_sri_done  # 오늘 SRI 검사를 했는지 여부
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
