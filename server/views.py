@@ -511,7 +511,7 @@ def walk_monthly_report(request, year, month):
         #walkhistory_id = first_walk.id if first_walk else None
 
         # 수정된 코드: 해당 날짜의 모든 산책 기록의 ID 가져오기
-        walks_on_day = WalkHistory.objects.filter(calendar=emotion).order_by('start_time')  # 수정된 부분
+        walks_on_day = WalkHistory.objects.filter(calendar=emotion).order_by('-start_time')  # 수정된 부분
         walkhistory_id = [walk.id for walk in walks_on_day]  # 수정된 부분
 
         emotion_data = {
